@@ -1,0 +1,51 @@
+name: Autograder
+
+on: [push]
+
+jobs:
+  grade:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install pytest aiohttp
+        pip install -r requirements.txt || true
+
+    - name: Check variant configuration
+      run: |
+        if [ -f ".variant_config.json" ]; then
+          echo "Variant configuration found"
+          cat .variant_config.json | python -c "import sys, json; v = json.load(sys.stdin); print(f'Student: {v[\"student_id\"]}'); print(f'Variant: {v[\"variant_hash\"]}')"
+        else
+          echo "No variant configuration found - using defaults"
+        fi
+
+    - name: Run visible tests
+      run: pytest tests/visible/ -v --tb=short
+
+    - name: Display test summary
+      if: always()
+      run: |
+        echo "================================"
+        echo "Test run complete"
+        echo "================================"
+        if [ -f ".variant_config.json" ]; then
+          python -c "
+import json
+with open('.variant_config.json') as f:
+    v = json.load(f)
+print(f'Student ID: {v[\"student_id\"]}')
+print(f'Thread workers tested: {v[\"worker_pool\"][\"thread_workers\"]}')
+print(f'Thread safety: {v[\"thread_safety\"][\"num_threads\"]} threads x {v[\"thread_safety\"][\"items_per_thread\"]} items')
+"
+        fi

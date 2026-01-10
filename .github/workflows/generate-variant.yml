@@ -1,0 +1,79 @@
+name: Generate Student Variant
+
+on:
+  # Runs automatically when repo is created via GitHub Classroom
+  create:
+  # Can also be triggered manually
+  workflow_dispatch:
+    inputs:
+      student_id:
+        description: 'Student ID (leave empty to extract from repo name)'
+        required: false
+        type: string
+
+jobs:
+  generate:
+    name: Generate Unique Variant
+    runs-on: ubuntu-latest
+    # Only run if variant doesn't already exist
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Check if variant already exists
+      id: check_variant
+      run: |
+        if [ -f ".variant_config.json" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+          echo "Variant already exists, skipping generation"
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "No variant found, will generate"
+        fi
+
+    - name: Extract student ID from repo name
+      if: steps.check_variant.outputs.exists == 'false'
+      id: extract_id
+      run: |
+        # Get student ID from workflow input or extract from repo name
+        if [ -n "${{ inputs.student_id }}" ]; then
+          STUDENT_ID="${{ inputs.student_id }}"
+        else
+          # Repository name format: assignment-name-studentusername
+          REPO_NAME="${{ github.repository }}"
+          # Extract the last part after the last hyphen (student username)
+          STUDENT_ID=$(echo "$REPO_NAME" | rev | cut -d'-' -f1 | rev)
+        fi
+        echo "student_id=$STUDENT_ID" >> $GITHUB_OUTPUT
+        echo "Extracted student ID: $STUDENT_ID"
+
+    - name: Generate variant configuration
+      if: steps.check_variant.outputs.exists == 'false'
+      run: |
+        python scripts/variant_generator.py "${{ steps.extract_id.outputs.student_id }}"
+
+    - name: Generate personalized assignment
+      if: steps.check_variant.outputs.exists == 'false'
+      run: |
+        python scripts/generate_assignment.py
+
+    - name: Commit variant files
+      if: steps.check_variant.outputs.exists == 'false'
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add .variant_config.json ASSIGNMENT.md
+        git commit -m "Generate unique variant for student" || echo "No changes to commit"
+        git push
