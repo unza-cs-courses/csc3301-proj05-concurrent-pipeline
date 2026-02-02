@@ -1,8 +1,9 @@
 name: Generate Student Variant
 
 on:
-  # Runs automatically when repo is created via GitHub Classroom
-  create:
+  # Runs automatically on first push (when student accepts assignment)
+  push:
+    branches: [main, master]
   # Can also be triggered manually
   workflow_dispatch:
     inputs:
