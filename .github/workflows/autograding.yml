@@ -40,12 +40,5 @@ jobs:
         echo "Test run complete"
         echo "================================"
         if [ -f ".variant_config.json" ]; then
-          python -c "
-import json
-with open('.variant_config.json') as f:
-    v = json.load(f)
-print(f'Student ID: {v[\"student_id\"]}')
-print(f'Thread workers tested: {v[\"worker_pool\"][\"thread_workers\"]}')
-print(f'Thread safety: {v[\"thread_safety\"][\"num_threads\"]} threads x {v[\"thread_safety\"][\"items_per_thread\"]} items')
-"
+          python -c "import json; v=json.load(open('.variant_config.json')); print(f'Student ID: {v[\"student_id\"]}'); print(f'Thread workers tested: {v[\"worker_pool\"][\"thread_workers\"]}'); print(f'Thread safety: {v[\"thread_safety\"][\"num_threads\"]} threads x {v[\"thread_safety\"][\"items_per_thread\"]} items')"
         fi
