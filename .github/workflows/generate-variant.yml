@@ -18,8 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     # Skip if this is a template repo (only run on student repos)
     if: ${{ !github.event.repository.is_template }}
-    # Only run if variant doesn't already exist
-    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
     permissions:
       contents: write
