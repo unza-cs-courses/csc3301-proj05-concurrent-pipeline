@@ -130,6 +130,8 @@ The tests will automatically use your variant configuration.
 
 ### Running Tests
 
+> **Important:** Testing is local-only. There is no automatic test feedback when you push to GitHub. You must run all tests yourself before pushing your code.
+
 ```bash
 # Run all visible tests
 pytest tests/visible/ -v
@@ -154,7 +156,6 @@ If no `.variant_config.json` exists (e.g., during local development), the tests 
 csc3301-proj05-concurrent-pipeline/
 ├── .github/
 │   └── workflows/
-│       ├── autograding.yml      # Test runner
 │       └── generate-variant.yml # Variant generator
 ├── scripts/
 │   ├── variant_generator.py     # Generate unique variants
@@ -184,5 +185,5 @@ csc3301-proj05-concurrent-pipeline/
 1. Clone your assignment repository
 2. Check `ASSIGNMENT.md` for your specific requirements
 3. Implement the required classes in `src/pipeline/`
-4. Run tests with `pytest tests/visible/ -v`
-5. Push to trigger autograding
+4. Run tests locally with `pytest tests/visible/ -v`
+5. Once all tests pass locally, push your code before the deadline
