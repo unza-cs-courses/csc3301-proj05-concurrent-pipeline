@@ -55,6 +55,11 @@ class TestFilterStage:
         from src.pipeline.stages import FilterStage
 
         stage = FilterStage(lambda x: x > 3)
+        # First verify filter actually works for passing items
+        passing = stage.process(5)
+        assert passing is not None, "FilterStage must return the item when predicate is True"
+        assert passing == 5, "FilterStage must return the original item when predicate is True"
+        # Then verify rejection
         result = stage.process(1)
         assert result is None
 
@@ -198,6 +203,11 @@ class TestCollectorSink:
 
         sink = CollectorSink()
         sink.consume(1)
+        # Verify consume actually collected the item first
+        r0 = sink.finalize()
+        assert 1 in r0, "CollectorSink.consume must actually store items"
+        assert len(r0) == 1, "CollectorSink should have exactly 1 item after 1 consume"
+        # Now verify finalize returns a copy
         r1 = sink.finalize()
         r1.append(999)
         r2 = sink.finalize()
